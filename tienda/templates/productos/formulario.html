@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titulo %}Agregar producto{% endblock %}
+
+{% block contenido %}
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in mensajes %}
+            <p style="color: {{ 'green' if categoria == 'ok' else 'red' }}">
+                {{ mensaje }}
+            </p>
+        {% endfor %}
+    {% endwith %}
+
+    <h1>Nuevo producto</h1>
+
+    <form method="POST">
+        <p><label>Nombre: <input name="nombre" required></label></p>
+
+        <p>
+            <label>
+                Precio:
+                <input name="precio" type="number" step="0.01" required>
+            </label>
+        </p>
+
+        <button class="btn" type="submit">Guardar</button>
+    </form>
+
+{% endblock %}
