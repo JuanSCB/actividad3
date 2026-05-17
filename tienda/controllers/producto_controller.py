@@ -23,3 +23,39 @@ def agregar():
         except ErrorValidacion as e:
             flash(str(e), "error")
     return render_template("productos/formulario.html")
+@producto_bp.route("/editar/<int:id>", methods=["GET", "POST"])
+def editar(id):
+
+    producto = servicio._repo.obtener(id)
+
+    if request.method == "POST":
+
+        try:
+
+            servicio.actualizar_producto(
+                id=id,
+                nombre=request.form.get("nombre", ""),
+                precio=request.form.get("precio", "")
+            )
+
+            flash("Producto actualizado", "ok")
+
+            return redirect(url_for("productos.listar"))
+
+        except ErrorValidacion as e:
+            flash(str(e), "error")
+
+    return render_template(
+        "productos/editar.html",
+        producto=producto
+    )
+
+
+@producto_bp.route("/eliminar/<int:id>")
+def eliminar(id):
+
+    servicio.eliminar_producto(id)
+
+    flash("Producto eliminado", "ok")
+
+    return redirect(url_for("productos.listar"))
