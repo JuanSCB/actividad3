@@ -1,24 +1,52 @@
+import json
+
 from tienda.models.producto import Producto
 from tienda.exceptions import ProductoNoEncontrado
- 
+
+
 class ProductoRepository:
 
     def __init__(self):
 
-        self._datos = [
-            Producto(1, "Laptop", 3500.00),
-            Producto(2, "Mouse", 45.50),
-            Producto(3, "Teclado", 120.00)
-        ]
+        self.archivo = "productos.json"
+
+
+    def _leer(self):
+
+        try:
+
+            with open(self.archivo, "r") as f:
+
+                datos = json.load(f)
+
+                return [Producto(**p) for p in datos]
+
+        except FileNotFoundError:
+
+            return []
+
+
+    def _guardar(self, productos):
+
+        with open(self.archivo, "w") as f:
+
+            json.dump(
+                [p.to_dict() for p in productos],
+                f,
+                indent=4
+            )
 
 
     def listar(self):
-        return list(self._datos)
+
+        return self._leer()
 
 
     def obtener(self, id):
 
-        for p in self._datos:
+        productos = self._leer()
+
+        for p in productos:
 
             if p.id == id:
                 return p
@@ -30,31 +58,57 @@ class ProductoRepository:
 
     def agregar(self, producto):
 
+        productos = self._leer()
+
         nuevo_id = max(
-            [p.id for p in self._datos],
+            [p.id for p in productos],
             default=0
         ) + 1
 
         producto.id = nuevo_id
 
-        self._datos.append(producto)
+        productos.append(producto)
+
+        self._guardar(productos)
 
         return producto
 
 
     def actualizar(self, id, nombre, precio):
 
-        producto = self.obtener(id)
+        productos = self._leer()
 
-        producto.nombre = nombre
+        for p in productos:
 
-        producto.precio = precio
+            if p.id == id:
 
-        return producto
+                p.nombre = nombre
+
+                p.precio = precio
+
+                self._guardar(productos)
+
+                return p
+
+        raise ProductoNoEncontrado(
+            f"No existe el producto {id}"
+        )
 
 
     def eliminar(self, id):
 
-        producto = self.obtener(id)
+        productos = self._leer()
 
-        self._datos.remove(producto)
+        for p in productos:
+
+            if p.id == id:
+
+                productos.remove(p)
+
+                self._guardar(productos)
+
+                return
+
+        raise ProductoNoEncontrado(
+            f"No existe el producto {id}"
+        )
